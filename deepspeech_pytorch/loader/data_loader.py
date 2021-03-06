@@ -110,7 +110,7 @@ class SpectrogramParser(AudioParser):
             add_noise = np.random.binomial(1, self.aug_conf.noise_prob)
             if add_noise:
                 y = self.noise_injector.inject_noise(y)
-        n_fft = int(self.sample_rate * self.window_size)
+        n_fft = int(self.sample_rate * self.window_size) # 1/s and s (win size)
         win_length = n_fft
         hop_length = int(self.sample_rate * self.window_stride)
         # STFT

@@ -1,0 +1,21 @@
+fairscale,c
+flask,c
+google-cloud-storage,c
+Hydra-core,p
+Jupyter,c
+Librosa,p
+matplotlib,c
+numpy,there
+Optuna,p
+pytest,c
+python-levenshtein,c
+pytorch-lightning>=1.1,p
+Scipy,c
+sklearn,p
+sox,p v1.4.1
+torch
+torchaudio,p
+torchelastic,p
+tqdm,c
+wget,c
+git+https://github.com/romesco/hydra-lightning/#subdirectory=hydra-configs-pytorch-lightning,p

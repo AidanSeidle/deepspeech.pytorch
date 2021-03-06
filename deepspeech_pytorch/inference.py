@@ -11,6 +11,13 @@ from deepspeech_pytorch.loader.data_loader import SpectrogramParser
 from deepspeech_pytorch.model import DeepSpeech
 from deepspeech_pytorch.utils import load_decoder, load_model
 
+# import matplotlib.pyplot as plt
+import librosa
+import matplotlib
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
+import numpy as np
+
 
 def decode_results(decoded_output: List,
                    decoded_offsets: List,
@@ -81,11 +88,40 @@ def run_transcribe(audio_path: str,
                    decoder: Decoder,
                    device: torch.device,
                    precision: int):
-    spect = spect_parser.parse_audio(audio_path).contiguous()
+    # spect = spect_parser.parse_audio(audio_path).contiguous()
+    
+
+    # Resample to 16 kHz
+    # import soundfile as sf
+    # sf.write('/Users/gt/Documents/GitHub/deepspeech.pytorch/data/inference/test_audio_16khz.wav', audio_input, 16000)
+    #
+    # audio_input, _ = librosa.load('/Users/gt/Documents/GitHub/deepspeech.pytorch/data/inference/test_audio2.wav', sr=16000)
+    # librosa.write('/Users/gt/Documents/GitHub/deepspeech.pytorch/data/inference/test_audio_16khz.wav', audio_input)
+    #
+    
+    spect = spect_parser.parse_audio(
+        '/Users/gt/Documents/GitHub/deepspeech.pytorch/data/inference/test_audio_16khz.wav').contiguous()
     spect = spect.view(1, 1, spect.size(0), spect.size(1))
     spect = spect.to(device)
     input_sizes = torch.IntTensor([spect.size(3)]).int()
     with autocast(enabled=precision == 16):
         out, output_sizes = model(spect, input_sizes)
     decoded_output, decoded_offsets = decoder.decode(out, output_sizes)
+    
+    # look into state
+    sdict = model.state_dict()
+    skeys = list(sdict.keys())
+    
+    # print sizes of all outputs:
+    for i, v in enumerate(skeys):
+        val = sdict[v]
+        print(v, val.shape)
+        
+    # look into spect
+    s = spect.squeeze().detach().numpy()
+
+    plt.figure()
+    plt.imshow((s), origin='lower')
+    plt.show()
+    
     return decoded_output, decoded_offsets

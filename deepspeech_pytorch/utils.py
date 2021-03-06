@@ -28,7 +28,9 @@ def check_loss(loss, loss_value):
 
 def load_model(device,
                model_path):
-    model = DeepSpeech.load_from_checkpoint(hydra.utils.to_absolute_path(model_path))
+    model = DeepSpeech.load_from_checkpoint(hydra.utils.to_absolute_path(
+        "/Users/gt/Documents/GitHub/deepspeech.pytorch/data/librispeech_pretrained_v3.ckpt"))
+    # model = DeepSpeech.load_from_checkpoint(hydra.utils.to_absolute_path(model_path))
     model.eval()
     model = model.to(device)
     return model

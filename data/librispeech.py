@@ -13,22 +13,24 @@ from deepspeech_pytorch.data.utils import create_manifest
 parser = argparse.ArgumentParser(description='Processes and downloads LibriSpeech dataset.')
 parser = add_data_opts(parser)
 parser.add_argument("--target-dir", default='LibriSpeech_dataset/', type=str, help="Directory to store the dataset.")
-parser.add_argument('--files-to-use', default="train-clean-100.tar.gz,"
-                                              "train-clean-360.tar.gz,train-other-500.tar.gz,"
-                                              "dev-clean.tar.gz,dev-other.tar.gz,"
-                                              "test-clean.tar.gz,test-other.tar.gz", type=str,
+# parser.add_argument('--files-to-use', default="train-clean-100.tar.gz,"
+#                                               "train-clean-360.tar.gz,train-other-500.tar.gz,"
+#                                               "dev-clean.tar.gz,dev-other.tar.gz,"
+#                                               "test-clean.tar.gz,test-other.tar.gz", type=str,
+#                     help='list of file names to download')
+parser.add_argument('--files-to-use', default="test-other.tar.gz", type=str,
                     help='list of file names to download')
 args = parser.parse_args()
 
 LIBRI_SPEECH_URLS = {
-    "train": ["http://www.openslr.org/resources/12/train-clean-100.tar.gz",
-              "http://www.openslr.org/resources/12/train-clean-360.tar.gz",
-              "http://www.openslr.org/resources/12/train-other-500.tar.gz"],
+    # "train": ["http://www.openslr.org/resources/12/train-clean-100.tar.gz",
+    #           "http://www.openslr.org/resources/12/train-clean-360.tar.gz",
+    #           "http://www.openslr.org/resources/12/train-other-500.tar.gz"],
+    #
+    # "val": ["http://www.openslr.org/resources/12/dev-clean.tar.gz",
+    #         "http://www.openslr.org/resources/12/dev-other.tar.gz"],
 
-    "val": ["http://www.openslr.org/resources/12/dev-clean.tar.gz",
-            "http://www.openslr.org/resources/12/dev-other.tar.gz"],
-
-    "test_clean": ["http://www.openslr.org/resources/12/test-clean.tar.gz"],
+    # "test_clean": ["http://www.openslr.org/resources/12/test-clean.tar.gz"],
     "test_other": ["http://www.openslr.org/resources/12/test-other.tar.gz"]
 }
 
@@ -59,6 +61,7 @@ def _process_file(wav_dir, txt_dir, base_filename, root_dir):
 def main():
     target_dl_dir = args.target_dir
     if not os.path.exists(target_dl_dir):
+        print('creating dir')
         os.makedirs(target_dl_dir)
     files_to_dl = args.files_to_use.strip().split(',')
     for split_type, lst_libri_urls in LIBRI_SPEECH_URLS.items():

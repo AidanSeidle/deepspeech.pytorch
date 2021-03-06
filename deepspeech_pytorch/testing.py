@@ -10,7 +10,7 @@ from deepspeech_pytorch.validation import run_evaluation
 
 @torch.no_grad()
 def evaluate(cfg: EvalConfig):
-    device = torch.device("cuda" if cfg.model.cuda else "cpu")
+    device = torch.device("cpu")# if cfg.model.cuda else "cpu")
 
     model = load_model(
         device=device,

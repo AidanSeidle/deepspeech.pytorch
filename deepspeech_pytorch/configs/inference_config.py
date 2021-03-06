@@ -19,7 +19,7 @@ class LMConfig:
 @dataclass
 class ModelConfig:
     precision: int = 32  # Set to 16 to use mixed-precision for inference
-    cuda: bool = True
+    cuda: bool = False # gt locally no cuda True
     model_path: str = ''
 
 
