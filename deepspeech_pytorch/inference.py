@@ -111,6 +111,9 @@ def run_transcribe(audio_path: str,
     # look into state
     sdict = model.state_dict()
     skeys = list(sdict.keys())
+
+    # if testing a rnn weight
+    # g = sdict[skeys[41]]
     
     # print sizes of all outputs:
     for i, v in enumerate(skeys):

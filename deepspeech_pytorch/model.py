@@ -212,9 +212,9 @@ class DeepSpeech(pl.LightningModule):
         )
 
     def forward(self, x, lengths):
-        lengths = lengths.cpu().int()
+        lengths = lengths.cpu().int() # time axis of the spect
         output_lengths = self.get_seq_lens(lengths)
-        x, _ = self.conv(x, output_lengths)
+        x, _ = self.conv(x, output_lengths) # x is the spectrogram
 
         sizes = x.size()
         x = x.view(sizes[0], sizes[1] * sizes[2], sizes[3])  # Collapse feature dimension
