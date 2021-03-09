@@ -96,6 +96,7 @@ class BatchRNN(nn.Module):
             x = self.batch_norm(x)
         x = nn.utils.rnn.pack_padded_sequence(x, output_lengths)
         x, h = self.rnn(x)
+        # x1, h1 = self.rnn(x)
         x, _ = nn.utils.rnn.pad_packed_sequence(x)
         if self.bidirectional:
             x = x.view(x.size(0), x.size(1), 2, -1).sum(2).view(x.size(0), x.size(1), -1)  # (TxNxH*2) -> (TxNxH) by sum
@@ -221,15 +222,22 @@ class DeepSpeech(pl.LightningModule):
         x = x.transpose(1, 2).transpose(0, 1).contiguous()  # TxNxH
 
         for rnn in self.rnns:
+            print('Entering RNN loop')
             x = rnn(x, output_lengths)
 
         if not self.bidirectional:  # no need for lookahead layer in bidirectional
             x = self.lookahead(x)
+        
+        x = self.fc(x) # here the output is [395,1,1024]
+        print(f'Shape of x after RNN: {x.shape}')
+        
+        x = x.transpose(0, 1) # now [1,395,1024]
+        print(f'Shape of x after RNN transpose: {x.shape}')
 
-        x = self.fc(x)
-        x = x.transpose(0, 1)
         # identity in training mode, softmax in eval mode
         x = self.inference_softmax(x)
+        print(f'Shape of x after softmax: {x.shape}')
+
         return x, output_lengths
 
     def training_step(self, batch, batch_idx):
@@ -302,3 +310,14 @@ class DeepSpeech(pl.LightningModule):
             if type(m) == nn.modules.conv.Conv2d:
                 seq_len = ((seq_len + 2 * m.padding[1] - m.dilation[1] * (m.kernel_size[1] - 1) - 1) // m.stride[1] + 1)
         return seq_len.int()
+
+
+class SaveOutput:
+    def __init__(self):
+        self.outputs = []
+    
+    def __call__(self, module, module_in, module_out):
+        self.outputs.append(module_out)
+    
+    def clear(self):
+        self.outputs = []

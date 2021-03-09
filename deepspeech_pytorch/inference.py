@@ -89,24 +89,63 @@ def run_transcribe(audio_path: str,
                    device: torch.device,
                    precision: int):
     # spect = spect_parser.parse_audio(audio_path).contiguous()
-    
 
-    # Resample to 16 kHz
-    # import soundfile as sf
-    # sf.write('/Users/gt/Documents/GitHub/deepspeech.pytorch/data/inference/test_audio_16khz.wav', audio_input, 16000)
-    #
-    # audio_input, _ = librosa.load('/Users/gt/Documents/GitHub/deepspeech.pytorch/data/inference/test_audio2.wav', sr=16000)
-    # librosa.write('/Users/gt/Documents/GitHub/deepspeech.pytorch/data/inference/test_audio_16khz.wav', audio_input)
-    #
-    
     spect = spect_parser.parse_audio(
         '/Users/gt/Documents/GitHub/deepspeech.pytorch/data/inference/test_audio_16khz.wav').contiguous()
     spect = spect.view(1, 1, spect.size(0), spect.size(1))
     spect = spect.to(device)
     input_sizes = torch.IntTensor([spect.size(3)]).int()
-    with autocast(enabled=precision == 16):
+
+    ## CALL HOOKS FROM SOMEWHERE HERE ##
+    # a dict to store the activations
+    # activation = {}
+    #
+    # def getActivation(name):
+    #     # the hook signature
+    #     def hook(model, input, output):
+    #         activation[name] = output.detach()
+    #
+    #     return hook
+    #
+    # layer_names = []
+    # for layer in model.modules():
+    #     layer_names.append(layer)
+
+    save_output = SaveOutput()
+
+    hook_handles = []
+    layer_names = []
+    for idx, layer in enumerate(model.modules()):
+        layer_names.append(layer)
+        # print(layer)
+        if isinstance(layer, torch.nn.modules.conv.Conv2d):
+            print('Fetching conv handles!\n')
+            handle = layer.register_forward_hook(save_output) # save idx and layer
+            hook_handles.append(handle)
+            
+        if isinstance(layer, torch.nn.modules.conv.Conv2d):
+            print('Fetching rnn handles!\n')
+            handle = layer.register_forward_hook(save_output) # save idx and layer
+            hook_handles.append(handle)
+    
+    
+    with autocast(enabled=precision == 16): # forward pass -- getting the outputs
         out, output_sizes = model(spect, input_sizes)
     decoded_output, decoded_offsets = decoder.decode(out, output_sizes)
+    
+    print(f'Number of hooks for CNN layers: {len(hook_handles)}')
+
+    
+    # # Try hooking up ! register hooks before forward pass
+    # hook_handles = []
+    # layer_names = []
+    # for layer in model.modules():
+    #     layer_names.append(layer)
+    #     if isinstance(layer, torch.nn.modules.conv.Conv2d):
+    #         handle = layer.register_forward_hook(save_output)
+    #         hook_handles.append(handle)
+    #
+    # print(f'Number of hooks for CNN layers: {len(hook_handles)}')
     
     # look into state
     sdict = model.state_dict()
@@ -116,9 +155,9 @@ def run_transcribe(audio_path: str,
     # g = sdict[skeys[41]]
     
     # print sizes of all outputs:
-    for i, v in enumerate(skeys):
-        val = sdict[v]
-        print(v, val.shape)
+    # for i, v in enumerate(skeys):
+    #     val = sdict[v]
+    #     print(v, val.shape)
         
     # look into spect
     s = spect.squeeze().detach().numpy()
@@ -128,3 +167,41 @@ def run_transcribe(audio_path: str,
     plt.show()
     
     return decoded_output, decoded_offsets
+
+
+class SaveOutput:
+    def __init__(self):
+        self.outputs = []
+        self.activations = {} # create a dict with module name
+    
+    def __call__(self, module, module_in, module_out):
+        """
+        Module in has the input tensor, module out in after the layer of interest
+        """
+        self.outputs.append(module_out)
+        self.activations[str(module)] = module_out
+    
+    def clear(self):
+        self.outputs = []
+        self.activations = {}
+        
+    def get_layer_names(self):
+        for k in self.activations.keys():
+            print(k)
+        
+        return list(self.activations.keys())
+        
+    def return_outputs(self):
+        self.outputs.detach().numpy()
+        
+    def detach_one_activation(self, layer_name):
+        return self.activations[layer_name].detach().numpy()
+        
+    def detach_activations(self):
+        detached_activations = {}
+        for k,v in self.activations.items():
+            print(f'Detaching activation for layer: {k}')
+            detached_activations[k] = v.detach().numpy()
+            print(f'Shape of activations: {np.shape(v)}')
+            
+        return detached_activations
