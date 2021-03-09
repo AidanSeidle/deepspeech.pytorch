@@ -17,6 +17,7 @@ import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import numpy as np
+import warnings
 
 
 def decode_results(decoded_output: List,
@@ -123,8 +124,13 @@ def run_transcribe(audio_path: str,
             handle = layer.register_forward_hook(save_output) # save idx and layer
             hook_handles.append(handle)
             
-        if isinstance(layer, torch.nn.modules.conv.Conv2d):
+        if isinstance(layer, torch.nn.modules.rnn.LSTM):
             print('Fetching rnn handles!\n')
+            handle = layer.register_forward_hook(save_output) # save idx and layer
+            hook_handles.append(handle)
+            
+        if type(layer) == torch.nn.Linear:
+            print('Fetching fc handles!\n')
             handle = layer.register_forward_hook(save_output) # save idx and layer
             hook_handles.append(handle)
     
@@ -160,6 +166,7 @@ def run_transcribe(audio_path: str,
     #     print(v, val.shape)
         
     # look into spect
+    save_output.activations
     s = spect.squeeze().detach().numpy()
 
     plt.figure()
@@ -179,7 +186,26 @@ class SaveOutput:
         Module in has the input tensor, module out in after the layer of interest
         """
         self.outputs.append(module_out)
-        self.activations[str(module)] = module_out
+        
+        layer_name = str(module)
+        current_layer_names = list(self.activations.keys())
+
+        split_layer_names = [l.split('--') for l in current_layer_names]
+        
+        num_occurences = 0
+        for s in split_layer_names:
+            s = s[0]  # base name
+    
+            if layer_name == s:
+                num_occurences += 1
+                
+        layer_name = str(module) + f'--{num_occurences}'
+        
+        if layer_name in self.activations:
+            warnings.warn('Layer name already exists')
+            
+            
+        self.activations[layer_name] = module_out
     
     def clear(self):
         self.outputs = []
