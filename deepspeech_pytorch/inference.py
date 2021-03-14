@@ -96,22 +96,8 @@ def run_transcribe(audio_path: str,
     spect = spect.view(1, 1, spect.size(0), spect.size(1))
     spect = spect.to(device)
     input_sizes = torch.IntTensor([spect.size(3)]).int()
-
-    ## CALL HOOKS FROM SOMEWHERE HERE ##
-    # a dict to store the activations
-    # activation = {}
-    #
-    # def getActivation(name):
-    #     # the hook signature
-    #     def hook(model, input, output):
-    #         activation[name] = output.detach()
-    #
-    #     return hook
-    #
-    # layer_names = []
-    # for layer in model.modules():
-    #     layer_names.append(layer)
-
+    
+    # Save outputs
     save_output = SaveOutput()
 
     hook_handles = []
@@ -123,11 +109,6 @@ def run_transcribe(audio_path: str,
             print('Fetching conv handles!\n')
             handle = layer.register_forward_hook(save_output) # save idx and layer
             hook_handles.append(handle)
-            
-        # if isinstance(layer, torch.nn.modules.rnn.LSTM):
-        #     print('Fetching rnn handles!\n')
-        #     handle = layer.register_forward_hook(save_output) # save idx and layer
-        #     hook_handles.append(handle)
 
         if type(layer) == torch.nn.LSTM:
             print('Fetching rnn handles!\n')
@@ -139,46 +120,24 @@ def run_transcribe(audio_path: str,
             handle = layer.register_forward_hook(save_output) # save idx and layer
             hook_handles.append(handle)
     
-    
+    print(f'Number of hooks for selected layers: {len(hook_handles)}')
+
     with autocast(enabled=precision == 16): # forward pass -- getting the outputs
         out, output_sizes = model(spect, input_sizes)
     decoded_output, decoded_offsets = decoder.decode(out, output_sizes)
-    
-    print(f'Number of hooks for selected layers: {len(hook_handles)}')
 
-    
-    # # Try hooking up ! register hooks before forward pass
-    # hook_handles = []
-    # layer_names = []
-    # for layer in model.modules():
-    #     layer_names.append(layer)
-    #     if isinstance(layer, torch.nn.modules.conv.Conv2d):
-    #         handle = layer.register_forward_hook(save_output)
-    #         hook_handles.append(handle)
-    #
-    # print(f'Number of hooks for CNN layers: {len(hook_handles)}')
-    
-    # look into state
+    # look into states and activations
     sdict = model.state_dict()
     skeys = list(sdict.keys())
 
-    # if testing a rnn weight
-    # g = sdict[skeys[41]]
-    
-    # print sizes of all outputs:
-    # for i, v in enumerate(skeys):
-    #     val = sdict[v]
-    #     print(v, val.shape)
-        
-    # look into spect
     act_keys = list(save_output.activations.keys())
     act_vals = save_output.activations
-    
+
     # detach activations
     detached_activations = save_output.detach_activations()
     
-    act_vals[act_keys[3]][1][1]
-
+    # store and save activations
+    
     return decoded_output, decoded_offsets
 
 

@@ -229,14 +229,14 @@ class DeepSpeech(pl.LightningModule):
             x = self.lookahead(x)
         
         x = self.fc(x) # here the output is [395,1,1024]
-        print(f'Shape of x after RNN: {x.shape}')
+        # print(f'Shape of x after RNN: {x.shape}')
         
         x = x.transpose(0, 1) # now [1,395,1024]
-        print(f'Shape of x after RNN transpose: {x.shape}')
+        # print(f'Shape of x after RNN transpose: {x.shape}')
 
         # identity in training mode, softmax in eval mode
         x = self.inference_softmax(x)
-        print(f'Shape of x after softmax: {x.shape}')
+        # print(f'Shape of x after softmax: {x.shape}')
 
         return x, output_lengths
 
