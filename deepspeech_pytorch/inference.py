@@ -89,10 +89,10 @@ def run_transcribe(audio_path: str,
                    decoder: Decoder,
                    device: torch.device,
                    precision: int):
-    # spect = spect_parser.parse_audio(audio_path).contiguous()
-
-    spect = spect_parser.parse_audio(
-        '/Users/gt/Documents/GitHub/deepspeech.pytorch/data/inference/test_audio_16khz.wav').contiguous()
+    spect = spect_parser.parse_audio(audio_path).contiguous()
+    # spect = spect_parser.parse_audio(
+    #     '/Users/gt/Documents/GitHub/deepspeech.pytorch/data/inference/test_audio_16khz.wav').contiguous()
+    
     spect = spect.view(1, 1, spect.size(0), spect.size(1))
     spect = spect.to(device)
     input_sizes = torch.IntTensor([spect.size(3)]).int()
@@ -144,7 +144,7 @@ def run_transcribe(audio_path: str,
         out, output_sizes = model(spect, input_sizes)
     decoded_output, decoded_offsets = decoder.decode(out, output_sizes)
     
-    print(f'Number of hooks for CNN layers: {len(hook_handles)}')
+    print(f'Number of hooks for selected layers: {len(hook_handles)}')
 
     
     # # Try hooking up ! register hooks before forward pass
@@ -173,12 +173,12 @@ def run_transcribe(audio_path: str,
     # look into spect
     act_keys = list(save_output.activations.keys())
     act_vals = save_output.activations
-    s = spect.squeeze().detach().numpy()
-
-    plt.figure()
-    plt.imshow((s), origin='lower')
-    plt.show()
     
+    # detach activations
+    detached_activations = save_output.detach_activations()
+    
+    act_vals[act_keys[3]][1][1]
+
     return decoded_output, decoded_offsets
 
 
@@ -232,11 +232,61 @@ class SaveOutput:
     def detach_one_activation(self, layer_name):
         return self.activations[layer_name].detach().numpy()
         
-    def detach_activations(self):
+    def detach_activations(self, lstm_output='recent'):
+        """
+        Detach activations (from tensors to numpy)
+        
+        Arguments:
+            lstm_output: for LSTM, can output either the hidden states throughout sequence ('sequence')
+                        or the most recent hidden states ('recent')
+            
+        Returns:
+            detached_activations = for each layer, the flattened activations
+            packaged_data = for LSTM layers, the packaged data
+        """
         detached_activations = {}
+        detached_packaged_data = {}
+        
+        # testing:
+        # activations = self.activations[
+        #     'Conv2d(1, 32, kernel_size=(41, 11), stride=(2, 2), padding=(20, 5))--0'].detach().numpy()
+        
         for k,v in self.activations.items():
             print(f'Detaching activation for layer: {k}')
-            detached_activations[k] = v.detach().numpy()
-            print(f'Shape of activations: {np.shape(v)}')
+            if k.startswith('Conv2d'): # no packaged data
+                activations = v.detach().numpy()
+                # squeeze batch dimension
+                avg_activations = activations.squeeze()
+                # expand (flatten) the channel x kernel dimension:
+                avg_activations = avg_activations.reshape(
+                    [avg_activations.shape[0] * avg_activations.shape[1], avg_activations.shape[2]])
+                # mean over time
+                avg_activations = avg_activations.mean(axis=1)
+                
+                detached_activations[k] = avg_activations
+                
+            if k.startswith('LSTM'): # packaged data available
+                packaged_data = v[0].data.detach().numpy()
+                detached_packaged_data[k] = packaged_data
+                activations = v[1]
+                if lstm_output == 'sequence':
+                    activations = activations[0].detach().numpy()
+                elif lstm_output == 'recent':
+                    activations = activations[1].detach().numpy()
+                else:
+                    print('LSTM output type not available')
+                    
+                # squeeze batch dimension
+                avg_activations = activations.squeeze()
+                # average over the num directions dimension:
+                avg_activations = avg_activations.mean(axis=0)
+                
+                detached_activations[k] = avg_activations
+                
+            if k.startswith('Linear'): # no packaged data
+                activations = v.detach().numpy()
+                # mean over time dimension
+                avg_activations = activations.mean(axis=0)
+                detached_activations[k] = avg_activations
             
         return detached_activations

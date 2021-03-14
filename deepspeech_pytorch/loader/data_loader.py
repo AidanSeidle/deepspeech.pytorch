@@ -13,6 +13,9 @@ import torchaudio
 
 from deepspeech_pytorch.configs.train_config import SpectConfig, AugmentationConfig
 from deepspeech_pytorch.loader.spec_augment import spec_augment
+import matplotlib
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
 
 torchaudio.set_audio_backend("sox_io")
 
@@ -128,6 +131,12 @@ class SpectrogramParser(AudioParser):
 
         if self.aug_conf and self.aug_conf.spec_augment:
             spect = spec_augment(spect)
+        
+        # INVESTIGATING SPECT
+        # s = spect.squeeze().detach().numpy()
+        # plt.figure()
+        # plt.imshow((s), origin='lower')
+        # plt.show()
 
         return spect
 
