@@ -107,3 +107,4 @@ data/*_dataset/
 .vscode/
 outputs/
 data/*.ckpt
+ctcdecode/
