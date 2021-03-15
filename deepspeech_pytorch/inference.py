@@ -18,7 +18,11 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import numpy as np
 import warnings
+from pathlib import Path
+import os
+import pickle
 
+RESULTDIR = '/Users/gt/Documents/GitHub/control-neural/control-neural/model-actv-control/DS2/'
 
 def decode_results(decoded_output: List,
                    decoded_offsets: List,
@@ -137,6 +141,11 @@ def run_transcribe(audio_path: str,
     detached_activations = save_output.detach_activations()
     
     # store and save activations
+    # get identifier (sound file name)
+    id1 = audio_path.split('/')[-1]
+    identifier = id1.split('.')[0]
+    
+    save_output.store_activations(RESULTDIR=RESULTDIR, identifier=identifier)
     
     return decoded_output, decoded_offsets
 
@@ -145,6 +154,7 @@ class SaveOutput:
     def __init__(self):
         self.outputs = []
         self.activations = {} # create a dict with module name
+        self.detached_activations = None
     
     def __call__(self, module, module_in, module_out):
         """
@@ -247,5 +257,19 @@ class SaveOutput:
                 # mean over time dimension
                 avg_activations = activations.mean(axis=0)
                 detached_activations[k] = avg_activations
+        
+        self.detached_activations = detached_activations
             
         return detached_activations
+    
+    def store_activations(self, RESULTDIR, identifier):
+        RESULTDIR = (Path(RESULTDIR))
+
+        if not (Path(RESULTDIR)).exists():
+            os.makedirs((Path(RESULTDIR)))
+        
+        filename = os.path.join(RESULTDIR, f'{identifier}_activations.pkl')
+
+        with open(filename, 'wb') as f:
+            pickle.dump(self.detached_activations, f)
+    
