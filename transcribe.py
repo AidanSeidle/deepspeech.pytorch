@@ -11,17 +11,15 @@ import numpy as np
 cs = ConfigStore.instance()
 cs.store(name="config", node=TranscribeConfig)
 
-DATADIR = '/Users/gt/Documents/GitHub/asr/decoding/165_natural_sounds/165_natural_sounds/'
+DATADIR = '/Users/gt/Documents/GitHub/control-neural/data/stimuli/165_natural_sounds_16kHz/'
 
 files = [f for f in listdir(DATADIR) if isfile(join(DATADIR, f))]
 wav_files = [f for f in files if f.endswith('wav')]
 
-
 @hydra.main(config_name="config")
 def hydra_main(cfg: TranscribeConfig):
     # run across several audio files
-    sorted_wav = np.sort(wav_files)
-    
+
     # generate cfgs
     cfg_all = {}
     for file in wav_files:

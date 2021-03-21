@@ -21,6 +21,7 @@ import warnings
 from pathlib import Path
 import os
 import pickle
+from scipy.io import wavfile
 
 RESULTDIR = '/Users/gt/Documents/GitHub/control-neural/control-neural/model-actv-control/DS2/'
 
@@ -93,9 +94,8 @@ def run_transcribe(audio_path: str,
                    decoder: Decoder,
                    device: torch.device,
                    precision: int):
+    
     spect = spect_parser.parse_audio(audio_path).contiguous()
-    # spect = spect_parser.parse_audio(
-    #     '/Users/gt/Documents/GitHub/deepspeech.pytorch/data/inference/test_audio_16khz.wav').contiguous()
     
     spect = spect.view(1, 1, spect.size(0), spect.size(1))
     spect = spect.to(device)

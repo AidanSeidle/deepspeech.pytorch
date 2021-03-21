@@ -311,13 +311,3 @@ class DeepSpeech(pl.LightningModule):
                 seq_len = ((seq_len + 2 * m.padding[1] - m.dilation[1] * (m.kernel_size[1] - 1) - 1) // m.stride[1] + 1)
         return seq_len.int()
 
-
-class SaveOutput:
-    def __init__(self):
-        self.outputs = []
-    
-    def __call__(self, module, module_in, module_out):
-        self.outputs.append(module_out)
-    
-    def clear(self):
-        self.outputs = []

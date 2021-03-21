@@ -22,6 +22,8 @@ torchaudio.set_audio_backend("sox_io")
 
 def load_audio(path):
     sound, sample_rate = torchaudio.load(path)
+    assert(sample_rate==16000)
+    
     if sound.shape[0] == 1:
         sound = sound.squeeze()
     else:
