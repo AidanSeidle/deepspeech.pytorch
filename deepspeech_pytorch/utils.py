@@ -5,7 +5,10 @@ from deepspeech_pytorch.configs.inference_config import LMConfig
 from deepspeech_pytorch.decoder import GreedyDecoder
 from deepspeech_pytorch.enums import DecoderType
 from deepspeech_pytorch.model import DeepSpeech
+import numpy as np
 
+# Set random seed
+np.random.seed(0)
 
 def check_loss(loss, loss_value):
     """
@@ -31,6 +34,14 @@ def load_model(device,
     model = DeepSpeech.load_from_checkpoint(hydra.utils.to_absolute_path(model_path))
     # model = DeepSpeech.load_from_checkpoint(hydra.utils.to_absolute_path(
     #     "/Users/gt/Documents/GitHub/deepspeech.pytorch/data/librispeech_pretrained_v3.ckpt"))
+
+    print('OBS! RANDOM NETWORK!')
+    # for k, v in state_dict.items():
+    #     w = state_dict[k]
+    #     idx = torch.randperm(w.nelement())  # create random indices across all dimensions
+    #     rand_w = w.view(-1)[idx].view(w.size())  # permute, and reshape back to original shape
+    #     state_dict[k] = rand_w
+    
     model.eval()
     model = model.to(device)
     return model

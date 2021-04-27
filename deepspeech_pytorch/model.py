@@ -158,10 +158,10 @@ class DeepSpeech(pl.LightningModule):
         self.conv = MaskConv(nn.Sequential(
             nn.Conv2d(1, 32, kernel_size=(41, 11), stride=(2, 2), padding=(20, 5)),
             nn.BatchNorm2d(32),
-            nn.Hardtanh(0, 20, inplace=True),
+            nn.Hardtanh(0, 20, inplace=False), # changed from true
             nn.Conv2d(32, 32, kernel_size=(21, 11), stride=(2, 1), padding=(10, 5)),
             nn.BatchNorm2d(32),
-            nn.Hardtanh(0, 20, inplace=True)
+            nn.Hardtanh(0, 20, inplace=False) # changed from true
         ))
         # Based on above convolutions and spectrogram size using conv formula (W - F + 2P)/ S+1
         rnn_input_size = int(math.floor((self.spect_cfg.sample_rate * self.spect_cfg.window_size) / 2) + 1)
@@ -190,7 +190,7 @@ class DeepSpeech(pl.LightningModule):
         self.lookahead = nn.Sequential(
             # consider adding batch norm?
             Lookahead(self.model_cfg.hidden_size, context=self.model_cfg.lookahead_context),
-            nn.Hardtanh(0, 20, inplace=True)
+            nn.Hardtanh(0, 20, inplace=False) # changed from true
         ) if not self.bidirectional else None
 
         fully_connected = nn.Sequential(

@@ -108,3 +108,4 @@ data/*_dataset/
 outputs/
 data/*.ckpt
 ctcdecode/
+.Rhistory

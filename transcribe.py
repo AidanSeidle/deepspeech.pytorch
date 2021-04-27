@@ -7,11 +7,17 @@ from deepspeech_pytorch.inference import transcribe
 from os import listdir
 from os.path import isfile, join
 import numpy as np
+import random
+import torch
+random.seed(0)
+torch.manual_seed(0)
+torch.cuda.manual_seed(0)
+
 
 cs = ConfigStore.instance()
 cs.store(name="config", node=TranscribeConfig)
 
-DATADIR = '/Users/gt/Documents/GitHub/control-neural/data/stimuli/165_natural_sounds_16kHz/'
+DATADIR = '/Users/gt/Documents/GitHub/aud-dnn/data/stimuli/165_natural_sounds_16kHz/'
 
 files = [f for f in listdir(DATADIR) if isfile(join(DATADIR, f))]
 wav_files = [f for f in files if f.endswith('wav')]

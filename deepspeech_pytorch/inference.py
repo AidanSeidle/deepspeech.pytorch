@@ -23,7 +23,7 @@ import os
 import pickle
 from scipy.io import wavfile
 
-RESULTDIR = '/Users/gt/Documents/GitHub/control-neural/control-neural/model-actv-control/DS2/'
+RESULTDIR = '/Users/gt/Documents/GitHub/aud-dnn/aud_dnn/model-actv/DS2/'
 
 def decode_results(decoded_output: List,
                    decoded_offsets: List,
@@ -110,19 +110,35 @@ def run_transcribe(audio_path: str,
         layer_names.append(layer)
         # print(layer)
         if isinstance(layer, torch.nn.modules.conv.Conv2d):
-            print('Fetching conv handles!\n')
+            print('Fetching conv handles!')
             handle = layer.register_forward_hook(save_output) # save idx and layer
             hook_handles.append(handle)
 
         if type(layer) == torch.nn.LSTM:
-            print('Fetching rnn handles!\n')
+            print('Fetching rnn handles!')
             handle = layer.register_forward_hook(save_output) # save idx and layer
             hook_handles.append(handle)
             
         if type(layer) == torch.nn.Linear:
-            print('Fetching fc handles!\n')
+            print('Fetching fc handles!')
             handle = layer.register_forward_hook(save_output) # save idx and layer
             hook_handles.append(handle)
+            
+        if isinstance(layer, torch.nn.modules.BatchNorm2d):
+            print('Fetching batch norm handles!')
+            handle = layer.register_forward_hook(save_output)  # save idx and layer
+            hook_handles.append(handle)
+        
+        if isinstance(layer, torch.nn.modules.BatchNorm1d):
+            print('Fetching batch norm handles!')
+            handle = layer.register_forward_hook(save_output)  # save idx and layer
+            hook_handles.append(handle)
+            
+        if isinstance(layer, torch.nn.Hardtanh):
+            print('Fetching tanH handles!')
+            handle = layer.register_forward_hook(save_output)  # save idx and layer
+            hook_handles.append(handle)
+
     
     print(f'Number of hooks for selected layers: {len(hook_handles)}')
 
@@ -133,9 +149,6 @@ def run_transcribe(audio_path: str,
     # look into states and activations
     sdict = model.state_dict()
     skeys = list(sdict.keys())
-
-    act_keys = list(save_output.activations.keys())
-    act_vals = save_output.activations
 
     # detach activations
     detached_activations = save_output.detach_activations()
@@ -215,14 +228,10 @@ class SaveOutput:
         """
         detached_activations = {}
         detached_packaged_data = {}
-        
-        # testing:
-        # activations = self.activations[
-        #     'Conv2d(1, 32, kernel_size=(41, 11), stride=(2, 2), padding=(20, 5))--0'].detach().numpy()
-        
+
         for k,v in self.activations.items():
             print(f'Detaching activation for layer: {k}')
-            if k.startswith('Conv2d'): # no packaged data
+            if k.startswith('Conv2d') or k.startswith('BatchNorm2d') or k.startswith('Hardtanh'): # all of these are 4d tensors
                 activations = v.detach().numpy()
                 # squeeze batch dimension
                 avg_activations = activations.squeeze()
@@ -238,21 +247,23 @@ class SaveOutput:
                 packaged_data = v[0].data.detach().numpy()
                 detached_packaged_data[k] = packaged_data
                 activations = v[1]
-                if lstm_output == 'sequence':
-                    activations = activations[0].detach().numpy()
-                elif lstm_output == 'recent':
-                    activations = activations[1].detach().numpy()
-                else:
-                    print('LSTM output type not available')
-                    
+                
+                # get both LSTM outputs
+                activations_sequence = activations[0].detach().numpy()
+                activations_recent = activations[1].detach().numpy()
+
                 # squeeze batch dimension
-                avg_activations = activations.squeeze()
-                # average over the num directions dimension:
-                avg_activations = avg_activations.mean(axis=0)
+                avg_activations_sequence = activations_sequence.squeeze()
+                avg_activations_recent = activations_recent.squeeze()
                 
-                detached_activations[k] = avg_activations
-                
-            if k.startswith('Linear'): # no packaged data
+                # CONCATENATE over the num directions dimension:
+                avg_activations_sequence = avg_activations_sequence.reshape(-1)
+                avg_activations_recent = avg_activations_recent.reshape(-1)
+
+                detached_activations[f'{k}--sequence'] = avg_activations_sequence
+                detached_activations[f'{k}--recent'] = avg_activations_recent
+
+            if k.startswith('Linear') or k.startswith('BatchNorm1d'):
                 activations = v.detach().numpy()
                 # mean over time dimension
                 avg_activations = activations.mean(axis=0)
@@ -268,7 +279,7 @@ class SaveOutput:
         if not (Path(RESULTDIR)).exists():
             os.makedirs((Path(RESULTDIR)))
         
-        filename = os.path.join(RESULTDIR, f'{identifier}_activations.pkl')
+        filename = os.path.join(RESULTDIR, f'{identifier}_activationsTEST.pkl')
 
         with open(filename, 'wb') as f:
             pickle.dump(self.detached_activations, f)
