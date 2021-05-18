@@ -22,6 +22,12 @@ from pathlib import Path
 import os
 import pickle
 from scipy.io import wavfile
+import random
+import torch
+np.random.seed(0)
+random.seed(0)
+torch.manual_seed(0)
+torch.cuda.manual_seed(0)
 
 RESULTDIR = '/Users/gt/Documents/GitHub/aud-dnn/aud_dnn/model-actv/DS2/'
 
@@ -214,13 +220,13 @@ class SaveOutput:
     def detach_one_activation(self, layer_name):
         return self.activations[layer_name].detach().numpy()
         
-    def detach_activations(self, lstm_output='recent'):
+    def detach_activations(self, lstm_output='cell'):
         """
         Detach activations (from tensors to numpy)
         
         Arguments:
-            lstm_output: for LSTM, can output either the hidden states throughout sequence ('sequence')
-                        or the most recent hidden states ('recent')
+            lstm_output: for LSTM, can output either the hidden states throughout hidden ('hidden')
+                        or the most cell hidden states ('cell')
             
         Returns:
             detached_activations = for each layer, the flattened activations
@@ -249,19 +255,19 @@ class SaveOutput:
                 activations = v[1]
                 
                 # get both LSTM outputs
-                activations_sequence = activations[0].detach().numpy()
-                activations_recent = activations[1].detach().numpy()
+                activations_hidden = activations[0].detach().numpy()
+                activations_cell = activations[1].detach().numpy()
 
                 # squeeze batch dimension
-                avg_activations_sequence = activations_sequence.squeeze()
-                avg_activations_recent = activations_recent.squeeze()
+                avg_activations_hidden = activations_hidden.squeeze()
+                avg_activations_cell = activations_cell.squeeze()
                 
                 # CONCATENATE over the num directions dimension:
-                avg_activations_sequence = avg_activations_sequence.reshape(-1)
-                avg_activations_recent = avg_activations_recent.reshape(-1)
+                avg_activations_hidden = avg_activations_hidden.reshape(-1)
+                avg_activations_cell = avg_activations_cell.reshape(-1)
 
-                detached_activations[f'{k}--sequence'] = avg_activations_sequence
-                detached_activations[f'{k}--recent'] = avg_activations_recent
+                detached_activations[f'{k}--hidden'] = avg_activations_hidden
+                detached_activations[f'{k}--cell'] = avg_activations_cell
 
             if k.startswith('Linear') or k.startswith('BatchNorm1d'):
                 activations = v.detach().numpy()
@@ -279,7 +285,7 @@ class SaveOutput:
         if not (Path(RESULTDIR)).exists():
             os.makedirs((Path(RESULTDIR)))
         
-        filename = os.path.join(RESULTDIR, f'{identifier}_activationsTEST.pkl')
+        filename = os.path.join(RESULTDIR, f'{identifier}_activations.pkl')
 
         with open(filename, 'wb') as f:
             pickle.dump(self.detached_activations, f)

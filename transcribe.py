@@ -9,6 +9,7 @@ from os.path import isfile, join
 import numpy as np
 import random
 import torch
+np.random.seed(0)
 random.seed(0)
 torch.manual_seed(0)
 torch.cuda.manual_seed(0)
