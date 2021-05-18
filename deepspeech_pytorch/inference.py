@@ -152,10 +152,6 @@ def run_transcribe(audio_path: str,
         out, output_sizes = model(spect, input_sizes)
     decoded_output, decoded_offsets = decoder.decode(out, output_sizes)
 
-    # look into states and activations
-    sdict = model.state_dict()
-    skeys = list(sdict.keys())
-
     # detach activations
     detached_activations = save_output.detach_activations()
     
@@ -285,7 +281,7 @@ class SaveOutput:
         if not (Path(RESULTDIR)).exists():
             os.makedirs((Path(RESULTDIR)))
         
-        filename = os.path.join(RESULTDIR, f'{identifier}_activations.pkl')
+        filename = os.path.join(RESULTDIR, f'{identifier}_activations_randnetw.pkl')
 
         with open(filename, 'wb') as f:
             pickle.dump(self.detached_activations, f)

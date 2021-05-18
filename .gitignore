@@ -109,3 +109,4 @@ outputs/
 data/*.ckpt
 ctcdecode/
 .Rhistory
+deepspeech_pytorch/DS2_randnetw_indices.pkl

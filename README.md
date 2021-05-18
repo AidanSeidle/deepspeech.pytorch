@@ -9,7 +9,7 @@ Inplace operations in model.py set to False (TanH, in the RNN)
 
 Pretrained model can be changed under inference_config.py (ModelConfig).
 
-Random model can be set under utils.py under load_model(), line 29. Or under saving.py in 
+Random model can be set under utils.py under load_model(). Change the activations file name in the save_output class in inference.py.
 
 ## Installation
 
