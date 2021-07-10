@@ -3,13 +3,14 @@
 
 Implementation of DeepSpeech2 for PyTorch using [PyTorch Lightning](https://github.com/PyTorchLightning/pytorch-lightning). The repo supports training/testing and inference using the [DeepSpeech2](http://arxiv.org/pdf/1512.02595v1.pdf) model. Optionally a [kenlm](https://github.com/kpu/kenlm) language model can be used at inference time.
 
-## Getting model activations
-Run transcribe.py to fetch model activations across several files. 
-Inplace operations in model.py set to False (TanH, in the RNN)
+## Extraction of model activations
+Run transcribe.py to fetch model activations for several audio files. 
+
+Edits to the original model: Inplace operations in model.py set to False (hardTanh, in the RNNs).
 
 Pretrained model can be changed under inference_config.py (ModelConfig).
 
-Random model can be set under utils.py under load_model(). Change the activations file name in the save_output class in inference.py.
+To run random network: In the utils.py script, it is possible to generate randomly permuted tensors for the VGGish architecture (line 43). The permuted architecture can be loaded in lines 55-62 (remove the commented parts). Change the filename in inference.py (line 284, class SaveOutput).
 
 ## Installation
 
