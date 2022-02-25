@@ -50,16 +50,16 @@ def load_model(device,
     # with open(os.path.join(os.getcwd(), 'DS2_randnetw_indices.pkl'), 'wb') as f:
     #     pickle.dump(d_rand_idx, f)
 
-    print('OBS! RANDOM NETWORK!')
-
-    for k, v in state_dict.items():
-        w = state_dict[k]
-        # Load random indices
-        print(f'________ Loading random indices from permuted architecture for {k} ________')
-        d_rand_idx = pickle.load(open(os.path.join('/Users/gt/Documents/GitHub/deepspeech.pytorch/deepspeech_pytorch', 'DS2_randnetw_indices.pkl'), 'rb'))
-        idx = d_rand_idx[k]
-        rand_w = w.view(-1)[idx].view(w.size()) # permute, and reshape back to original shape
-        state_dict[k] = rand_w
+    # print('OBS! RANDOM NETWORK!')
+    #
+    # for k, v in state_dict.items():
+    #     w = state_dict[k]
+    #     # Load random indices
+    #     print(f'________ Loading random indices from permuted architecture for {k} ________')
+    #     d_rand_idx = pickle.load(open(os.path.join('/Users/gt/Documents/GitHub/deepspeech.pytorch/deepspeech_pytorch', 'DS2_randnetw_indices.pkl'), 'rb'))
+    #     idx = d_rand_idx[k]
+    #     rand_w = w.view(-1)[idx].view(w.size()) # permute, and reshape back to original shape
+    #     state_dict[k] = rand_w
     
     model.load_state_dict(state_dict)   # map_location=torch.device('cpu'))
     model.eval()

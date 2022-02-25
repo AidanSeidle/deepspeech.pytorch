@@ -13,8 +13,8 @@ import torchaudio
 
 from deepspeech_pytorch.configs.train_config import SpectConfig, AugmentationConfig
 from deepspeech_pytorch.loader.spec_augment import spec_augment
-import matplotlib
-matplotlib.use('TkAgg')
+# import matplotlib
+# matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
 torchaudio.set_audio_backend("sox_io")
@@ -22,8 +22,11 @@ torchaudio.set_audio_backend("sox_io")
 
 def load_audio(path):
     sound, sample_rate = torchaudio.load(path)
+
     assert(sample_rate==16000)
-    
+    # plt.hist(sound.numpy())
+    # plt.show()
+
     if sound.shape[0] == 1:
         sound = sound.squeeze()
     else:
@@ -138,6 +141,7 @@ class SpectrogramParser(AudioParser):
         # s = spect.squeeze().detach().numpy()
         # plt.figure()
         # plt.imshow((s), origin='lower')
+        # plt.colorbar()
         # plt.show()
 
         return spect
