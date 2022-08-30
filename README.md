@@ -10,7 +10,7 @@ Edits to the original model: Inplace operations in model.py set to False (hardTa
 
 Pretrained model can be changed under inference_config.py (ModelConfig).
 
-To run random network: In the utils.py script, it is possible to generate randomly permuted tensors for the VGGish architecture (line 43). The permuted architecture can be loaded in lines 55-62 (remove the commented parts). Change the filename in inference.py (line 284, class SaveOutput).
+To run random network: In the utils.py script, it is possible to generate randomly permuted tensors for the DeepSpeech architecture (line 43). The permuted architecture can be loaded in lines 55-62 (remove the commented parts). Change the filename in inference.py (line 284, class SaveOutput).
 
 ## Installation
 
