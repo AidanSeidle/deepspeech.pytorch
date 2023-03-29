@@ -30,6 +30,7 @@ def hydra_main(cfg: TranscribeConfig):
     # generate cfgs
     cfg_all = {}
     for file in wav_files:
+        print(file)
         cfg_copy = cfg.copy()
         cfg_copy['audio_path'] = DATADIR + file
         cfg_all[file] = cfg_copy

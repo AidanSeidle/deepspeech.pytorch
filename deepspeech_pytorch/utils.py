@@ -41,25 +41,27 @@ def load_model(device,
     state_dict = model.state_dict()
 
     ## The following code was used to generate indices for random permutation ##
-    # d_rand_idx = {}  # create dict for storing the indices for random permutation
-    # for k, v in state_dict.items():
-    #     w = state_dict[k]
-    #     idx = torch.randperm(w.nelement())  # create random indices across all dimensions
-    #     d_rand_idx[k] = idx
-    #
-    # with open(os.path.join(os.getcwd(), 'DS2_randnetw_indices.pkl'), 'wb') as f:
-    #     pickle.dump(d_rand_idx, f)
+    if not os.path.exists(os.path.join(os.getcwd(), 'DS2_randnetw_indices.pkl')):
+        d_rand_idx = {}  # create dict for storing the indices for random permutation
+        for k, v in state_dict.items():
+            w = state_dict[k]
+            idx = torch.randperm(w.nelement())  # create random indices across all dimensions
+            d_rand_idx[k] = idx
 
-    # print('OBS! RANDOM NETWORK!')
-    #
-    # for k, v in state_dict.items():
-    #     w = state_dict[k]
-    #     # Load random indices
-    #     print(f'________ Loading random indices from permuted architecture for {k} ________')
-    #     d_rand_idx = pickle.load(open(os.path.join('/Users/gt/Documents/GitHub/deepspeech.pytorch/deepspeech_pytorch', 'DS2_randnetw_indices.pkl'), 'rb'))
-    #     idx = d_rand_idx[k]
-    #     rand_w = w.view(-1)[idx].view(w.size()) # permute, and reshape back to original shape
-    #     state_dict[k] = rand_w
+        with open(os.path.join(os.getcwd(), 'DS2_randnetw_indices.pkl'), 'wb') as f:
+            pickle.dump(d_rand_idx, f)
+    else:
+        d_rand_idx = pickle.load(open(os.path.join(os.getcwd(), 'DS2_randnetw_indices.pkl'), 'rb'))
+
+    print('OBS! RANDOM NETWORK!')
+
+    for k, v in state_dict.items():
+        w = state_dict[k]
+        # Load random indices
+        print(f'________ Loading random indices from permuted architecture for {k} ________')
+        idx = d_rand_idx[k]
+        rand_w = w.view(-1)[idx].view(w.size()) # permute, and reshape back to original shape
+        state_dict[k] = rand_w
     
     model.load_state_dict(state_dict)   # map_location=torch.device('cpu'))
     model.eval()

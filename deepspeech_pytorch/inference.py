@@ -282,6 +282,7 @@ class SaveOutput:
             os.makedirs((Path(RESULTDIR)))
         
         filename = os.path.join(RESULTDIR, f'{identifier}_activations_randnetw.pkl')
+        # filename = os.path.join(RESULTDIR, f'{identifier}_activations.pkl')
 
         with open(filename, 'wb') as f:
             pickle.dump(self.detached_activations, f)
