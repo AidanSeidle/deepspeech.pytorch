@@ -18,7 +18,7 @@ torch.cuda.manual_seed(0)
 cs = ConfigStore.instance()
 cs.store(name="config", node=TranscribeConfig)
 
-DATADIR = '/Users/gt/Documents/GitHub/aud-dnn/data/stimuli/165_natural_sounds_16kHz/'
+DATADIR = 'C:/Users/ajseidle/Desktop/Spatial Audio/SpatialAudio/SoundDataset_B_NormResamp/'
 
 files = [f for f in listdir(DATADIR) if isfile(join(DATADIR, f))]
 wav_files = [f for f in files if f.endswith('wav')]

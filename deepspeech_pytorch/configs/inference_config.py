@@ -20,7 +20,7 @@ class LMConfig:
 class ModelConfig:
     precision: int = 32  # Set to 16 to use mixed-precision for inference
     cuda: bool = False # gt locally no cuda True
-    model_path: str = "/Users/gt/Documents/GitHub/deepspeech.pytorch/data/librispeech_pretrained_v3.ckpt"
+    model_path: str = "/Users/ajseidle/Documents/GitHub/deepspeech.pytorch/data/librispeech_pretrained_v3.ckpt"
 
 
 @dataclass
@@ -31,7 +31,7 @@ class InferenceConfig:
 
 @dataclass
 class TranscribeConfig(InferenceConfig):
-    audio_path: str = '/Users/gt/Documents/GitHub/deepspeech.pytorch/data/inference/test_audio_16khz.wav'  # Audio file to predict on
+    audio_path: str = '/Users/ajseidle/Documents/GitHub/deepspeech.pytorch/data/inference/test_audio_16khz.wav'  # Audio file to predict on
     offsets: bool = False  # Returns time offset information
 
 

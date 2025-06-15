@@ -17,7 +17,7 @@ from deepspeech_pytorch.loader.spec_augment import spec_augment
 # matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
-torchaudio.set_audio_backend("sox_io")
+torchaudio.set_audio_backend("soundfile")
 
 
 def load_audio(path):

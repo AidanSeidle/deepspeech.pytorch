@@ -29,7 +29,7 @@ random.seed(0)
 torch.manual_seed(0)
 torch.cuda.manual_seed(0)
 
-RESULTDIR = '/Users/gt/Documents/GitHub/aud-dnn/aud_dnn/model-actv/DS2/'
+RESULTDIR = "C:/Users/ajseidle/Documents/GitHub/auditory_brain_dnn/aud_dnn/full-soundset-actv/DS2/"
 
 def decode_results(decoded_output: List,
                    decoded_offsets: List,
@@ -281,8 +281,8 @@ class SaveOutput:
         if not (Path(RESULTDIR)).exists():
             os.makedirs((Path(RESULTDIR)))
         
-        filename = os.path.join(RESULTDIR, f'{identifier}_activations_randnetw.pkl')
-        # filename = os.path.join(RESULTDIR, f'{identifier}_activations.pkl')
+        # filename = os.path.join(RESULTDIR, f'{identifier}_activations_randnetw.pkl')
+        filename = os.path.join(RESULTDIR, f'{identifier}_activations.pkl')
 
         with open(filename, 'wb') as f:
             pickle.dump(self.detached_activations, f)
